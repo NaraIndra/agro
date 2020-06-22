@@ -1,3 +1,4 @@
+import django_heroku
 """
 Django settings for guru project.
 
@@ -26,6 +27,8 @@ SECRET_KEY = '57dj)*kr3l)zf3vg(l-c%e88^r1j9y330+1(9iibg#)d)3=c-a'
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+
 
 
 # Application definition
@@ -119,3 +122,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+# Configure Django App for Heroku.
+django_heroku.settings(locals())
+
