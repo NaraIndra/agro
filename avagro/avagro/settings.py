@@ -25,7 +25,7 @@ SECRET_KEY = 'q#0-_#=azct&)#06gx*optpp6(b*ympb)d&tyg3%cqprfpf4bw'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['avagro.fun', 'www.avagro.fun']
+ALLOWED_HOSTS = ['avagro.fun', 'www.avagro.fun', '127.0.0.1']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'avagro.urls'
+
+
 
 TEMPLATES = [
     {
@@ -74,12 +77,17 @@ WSGI_APPLICATION = 'avagro.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': 'u1108756_default',
+    #     'USER': 'u1108756_default',
+    #     'PASSWORD': 'MmqWrc_0',
+    #     'HOST': 'localhost',
+    # }
+
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'u1108756_default',
-        'USER': 'u1108756_default',
-        'PASSWORD': 'MmqWrc_0',
-        'HOST': 'localhost',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -121,3 +129,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT='static/'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
