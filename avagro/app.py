@@ -1,93 +1,96 @@
 import os
-from flask import Flask, render_template, session, redirect, url_for, flash
-from flask_login import UserMixin
-from flask import Flask, render_template, session, redirect, url_for, flash
-from flask_bootstrap import Bootstrap
-from werkzeug.security import generate_password_hash, check_password_hash
-# from flask_bootstrap import Bootstrap
-# from flask_moment import Moment
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
-from flask_sqlalchemy import SQLAlchemy
-# from flask_bootstrap import Bootstrap
-# from flask_moment import Moment
-# from flask_wtf import FlaskForm
-# from wtforms import StringField, SubmitField
-# from wtforms.validators import DataRequired
-# bootstrap = Bootstrap(app)
-
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
-
-
-from wtforms import StringField, SubmitField
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
-basedir = os.path.abspath(os.path.dirname(__file__))
 
-app = Flask(__name__)
-bootstrap = Bootstrap(app)
-app.config["SECRET_KEY"] = "hard to guess string"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(
-    basedir, "data.sqlite"
-)
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# bootstrap = Bootstrap(app)
-# moment = Moment(app)
-db = SQLAlchemy(app)
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output
+import plotly.express as px
+import pandas as pd
+from pathlib import Path
+# from data_processing.data_processing import currency_find_leader_sec_points
 
 
-class Role(db.Model):
-    __tablename__ = "roles"
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(64), unique=True)
-    users = db.relationship("User", backref="role", lazy="dynamic")
 
-    def __repr__(self):
-        return "<Role %r>" % self.name
+external_stylesheets = ["https://codepen.io/chriddyp/pen/bWLwgP.css"]
 
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-class User(db.Model):
-    __tablename__ = "users"
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), unique=True, index=True)
-    password = db.Column(db.String(64), unique=False)
-    registration_date = db.Column(db.Date)
-    role_id = db.Column(db.Integer, db.ForeignKey("roles.id"))
+colors = {"background": "#111111", "text": "#7FDBFF"}
 
-    def __repr__(self):
-        return "<User %r>" % self.username
+ancestors_path = Path(__file__).parent / 'matrix_ancestor.csv'
+# crop_rotation = Path(__file__).parents[1] / 'data' /  'crop_rotation.xlsx'
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+df_ancestors = pd.read_csv(ancestors_path)
+print(df_ancestors)
 
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+ancestor_matrix  = df_ancestors.iloc[:7,:].copy()
+ancestor_matrix.index = df_ancestors.columns
+ancestor_dict = {}
+for col in  ancestor_matrix.columns:
+    val = ()
+    ancestor_dict.update({col:sorted([(index, ancestor_matrix[col][index]) for index in ancestor_matrix.index],
+    key = lambda elem: elem[1])})
 
-
-class NameForm(FlaskForm):
-    name = StringField('What is your name?', validators=[DataRequired()])
-    submit = SubmitField('Submit')
-
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template("404.html"), 404
-
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template("500.html"), 500
-
-
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    name = None
-    form = NameForm()
-    if form.validate_on_submit():
-        name = form.name.data
-        form.name.data = ''
-    return render_template('index.html', form=form, name=name)
+# leader, points = currency_find_leader_sec_points(cur_give, cur_take)
+#
+# data = df.loc[df['saler_id'] == leader]
+#
+# name_give = cur_df.loc[cur_df['id'] == cur_give, 'name']
+# name_take = cur_df.loc[cur_df['id'] == cur_take, 'name']
+# fig = px.line(data, x=points['datetime'], y=points['cur_give_num'], title=f'продажа {name_give.values}\n покупка {name_take.values}')
+#
+#
+# # fig = px.bar(df, x="Fruit", y="Amount")
+#
+# fig.update_layout(
+#     plot_bgcolor=colors["background"],
+#     paper_bgcolor=colors["background"],
+#     font_color=colors["text"],
+# )
+#
+# markdown_text = """
+# Данные о курсах взяты c сайта https://www.bestchange.net
+# """
+#
+#
+# app.layout = html.Div(
+#     style={"backgroundColor": colors["background"]},
+#     children=[
+#         html.H1(
+#             children="Анализ обменников на базе платформы BestChange",
+#             style={"textAlign": "center", "color": colors["text"]},
+#         ),
+#         dcc.Markdown(
+#             markdown_text, style={"textAlign": "center", "color": colors["text"]}
+#         ),
+#         dcc.Graph(id="graph_with_slider", figure=fig),
+#         dcc.Slider(
+#             id='time-slider',
+#             min=1,
+#             max=7,
+#             value=1,
+#             marks={str(i):name  for i, name in zip(range(2,7),['секунды', 'десятки сек', 'минуты', 'часы', 'дни'])},
+#             step=None
+#         )
+#     ],
+# )
+#
+# @app.callback(
+#     Output('graph-with-slider', 'figure'),
+#     [Input('year-slider', 'value')])
+# def update_figure(selected_year):
+#     filtered_df = df[df.year == selected_year]
+#
+#     fig = px.scatter(filtered_df, x="gdpPercap", y="lifeExp",
+#                      size="pop", color="continent", hover_name="country",
+#                      log_x=True, size_max=55)
+#
+#     fig.update_layout(transition_duration=500)
+#
+#     return fig
+#
+# if __name__ == "__main__":
+#     app.run_server(debug=True)
